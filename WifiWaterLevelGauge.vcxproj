@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="ESP8266|ARM">
+      <Configuration>ESP8266</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{FE2C24A2-03EE-4139-8834-474F6C3861FF}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+    <ProjectName>WifiWaterLevelGauge</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='ESP8266|ARM'">
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ESP8266|ARM'">
+    <IncludePath>\\homeserver\home\esp-open-sdk\sdk\include;\\homeserver\home\esp-open-sdk\sdk\include\json;$(ProjectDir)include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="user\calculator.c" />
+    <ClCompile Include="user\configuration.c" />
+    <ClCompile Include="user\httpclient.c" />
+    <ClCompile Include="user\io.c" />
+    <ClCompile Include="user\log.c" />
+    <ClCompile Include="user\posting.c" />
+    <ClCompile Include="user\powermanagement.c" />
+    <ClCompile Include="user\stdout.c" />
+    <ClCompile Include="user\ultrasonicmeter.c" />
+    <ClCompile Include="user\user_main.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\calculator.h" />
+    <ClInclude Include="include\configuration.h" />
+    <ClInclude Include="include\espmissingincludes.h" />
+    <ClInclude Include="include\httpclient.h" />
+    <ClInclude Include="include\io.h" />
+    <ClInclude Include="include\log.h" />
+    <ClInclude Include="include\posting.h" />
+    <ClInclude Include="include\powermanagement.h" />
+    <ClInclude Include="include\stdout.h" />
+    <ClInclude Include="include\uart_hw.h" />
+    <ClInclude Include="include\ultrasonicmeter.h" />
+    <ClInclude Include="include\user_config.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="custom.app.512.ld" />
+    <None Include="Makefile" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="License.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

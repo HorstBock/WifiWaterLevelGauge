@@ -1,6 +1,8 @@
-The MIT License (MIT)
+Wifi water level gauge - a WiFi enabled gauge for measuring the water level in a cistern via ultrasonic sensor
 
-Copyright (c) 2016 HorstBock
+Licensed under the MIT License (MIT)
+
+Copyright (c) 2016 - Matthias Jentsch
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +21,21 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+-------------------------------------------------------------------------------
+
+The http client module is subject to the following license:
+
+"THE BEER-WARE LICENSE" (Revision 42):
+Martin d'Allens <martin.dallens@gmail.com> wrote this file. As long as you retain
+this notice you can do whatever you want with this stuff. If we meet some day,
+and you think this stuff is worth it, you can buy me a beer in return.
+
+-------------------------------------------------------------------------------
+
+The stdout module is subject to the following license:
+
+"THE BEER-WARE LICENSE" (Revision 42):
+Jeroen Domburg <jeroen@spritesmods.com> wrote this file. As long as you retain 
+this notice you can do whatever you want with this stuff. If we meet some day, 
+and you think this stuff is worth it, you can buy me a beer in return. 
