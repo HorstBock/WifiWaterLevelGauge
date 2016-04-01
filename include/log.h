@@ -28,7 +28,7 @@
 #define __log_H__
 
 // enable the logging mechanism
-void ICACHE_FLASH_ATTR log_enable();
+void ICACHE_FLASH_ATTR log_enable(unsigned char logType);
 // writes one character to the log buffer
 void ICACHE_FLASH_ATTR log_write(char nextChar);
 // save all buffers before going to deep sleep

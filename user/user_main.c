@@ -62,9 +62,13 @@ void user_init(void)
 		configurationFound = configuration_init();
 	}
 	// enable logging?
-	if (configurationFound == TRUE && configuration_getLogType() != 0)
+	if (configurationFound == TRUE)
 	{
-		log_enable();
+		unsigned char logType = configuration_getLogType();
+		if (logType != 0)
+		{
+			log_enable(logType);
+		}
 	}
 
 	// the config button should be observed from now on

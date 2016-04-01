@@ -83,8 +83,6 @@
   <ItemGroup>
     <None Include="Makefile" />
     <None Include="custom.app.512.ld" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="License.txt" />
+    <None Include="LICENSE" />
   </ItemGroup>
 </Project>

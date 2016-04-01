@@ -75,8 +75,6 @@ static unsigned char ICACHE_FLASH_ATTR log_getRealFlashBlockNumber()
 // enable the logging mechanism
 void ICACHE_FLASH_ATTR log_enable(unsigned char logType)
 {
-	// enable by setting the log type
-	log_type = logType;
 	// init the log pointers
 	unsigned int nextLogBytePointer = powermanagement_getNextLogBytePointer();
 	log_rollingStartBlock = (unsigned char)(nextLogBytePointer >> 24);
@@ -87,9 +85,14 @@ void ICACHE_FLASH_ATTR log_enable(unsigned char logType)
 		log_isFull = TRUE;
 		return;
 	}
-	// allocate memory and read the current log block into the buffer
-	log_buffer = (char*)os_malloc(SPI_FLASH_SEC_SIZE);
-	spi_flash_read(log_getRealFlashBlockNumber() * SPI_FLASH_SEC_SIZE, (uint32*)log_buffer, SPI_FLASH_SEC_SIZE);
+	// enable by setting the log type
+	log_type = logType;
+	if (logType != 0)
+	{
+		// allocate memory and read the current log block into the buffer
+		log_buffer = (char*)os_malloc(SPI_FLASH_SEC_SIZE);
+		spi_flash_read(log_getRealFlashBlockNumber() * SPI_FLASH_SEC_SIZE, (uint32*)log_buffer, SPI_FLASH_SEC_SIZE);
+	}
 }
 
 // writes one character to the log buffer
@@ -142,6 +145,7 @@ void ICACHE_FLASH_ATTR log_save()
 	// store the pointer to the next log byte in the RTC data area that deep sleep will survive
 	unsigned int next = log_currentBlockNumber * SPI_FLASH_SEC_SIZE + log_nextLogByteInBlock;
 	powermanagement_setNextLogBytePointer((log_rollingStartBlock << 24) + next);
+	
 	// is the log full or below of 10% free?
 	if (log_isFull || LOG_DATA_MAX_BLOCKS * SPI_FLASH_SEC_SIZE - next < LOG_DATA_MAX_BLOCKS * SPI_FLASH_SEC_SIZE / 10)
 	{
@@ -293,6 +297,16 @@ void ICACHE_FLASH_ATTR log_post()
 	if (log_type == 0)
 	{
 		return;
+	}
+
+	// TODO: I would be better to read the last data directly from the buffer; as workaround I save it to the flash
+	// erase the block and write the buffer to the flash
+	unsigned char blockNumber = log_getRealFlashBlockNumber();
+	// skip if the block is empty
+	if (log_nextLogByteInBlock > 0)
+	{
+		spi_flash_erase_sector(blockNumber);
+		spi_flash_write(blockNumber * SPI_FLASH_SEC_SIZE, (uint32*)log_buffer, SPI_FLASH_SEC_SIZE);
 	}
 
 	// initialize the pointers
