@@ -45,16 +45,16 @@
 #define FINISHED 4
 
 // Duration for waiting for "silence" (ultrasonic silence) in milliseconds, that's the timespan between two single shot measurements
-#define SILENCE_TIMESPAN_MS 1000
+#define SILENCE_TIMESPAN_MS 1500
 
 // Unit of measurement according to the datashett of HC-SR04 (58 µs / cm = 5,8 µs / mm)
 #define US_PER_MM 5.8
 
 // Length of the trigger pulse in µs
-#define TRIGGER_PULSE_US 15
+#define TRIGGER_PULSE_US 30
 
 // how often should the module do a measurement?
-#define MAX_MEASUREMENTS 10
+#define MAX_MEASUREMENTS 15
 
 // Echo quality 0 = no echo received; 10 = best possible; all 10 measurements are received
 static unsigned char ultrasonicMeter_valueQuality = 5;
