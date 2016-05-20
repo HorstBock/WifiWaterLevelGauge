@@ -45,18 +45,18 @@
 #define FINISHED 4
 
 // Duration for waiting for "silence" (ultrasonic silence) in milliseconds, that's the timespan between two single shot measurements
-#define SILENCE_TIMESPAN_MS 1500
+#define SILENCE_TIMESPAN_MS 1000
 
 // Unit of measurement according to the datashett of HC-SR04 (58 µs / cm = 5,8 µs / mm)
 #define US_PER_MM 5.8
 
 // Length of the trigger pulse in µs
-#define TRIGGER_PULSE_US 30
+#define TRIGGER_PULSE_US 15
 
 // how often should the module do a measurement?
-#define MAX_MEASUREMENTS 15
+#define MAX_MEASUREMENTS 10
 
-// Echo quality 0 = no echo received; 10 = best possible; all 10 measurements are received
+// Echo quality 0 = no echo received; MAX_MEASUREMENTS = best possible; all MAX_MEASUREMENTS measurements are received
 static unsigned char ultrasonicMeter_valueQuality = 5;
 // all the measured values
 static float ultrasonicMeter_measuredDistances[MAX_MEASUREMENTS];
@@ -75,7 +75,7 @@ static ETSTimer ultrasonicMeter_triggerNewCycleTimer;
 // call this function after all measurements are done
 static ultrasonicMeter_finishedCallback *ultrasonicMeter_finished = NULL;
 
-// gets the echo quality: 0 = no echo received; 10 = best possible; all 10 measurements are received
+// gets the echo quality: 0 = no echo received; MAX_MEASUREMENTS = best possible; all MAX_MEASUREMENTS measurements are received
 unsigned char ICACHE_FLASH_ATTR ultrasonicMeter_getEchoQuality()
 {
 	return ultrasonicMeter_valueQuality;
@@ -124,54 +124,57 @@ static void ICACHE_FLASH_ATTR ultrasonicMeter_gpioEvent(void *args)
 	// if the interrupt was by ECHO_GPIO
 	if (gpio_status & BIT(ECHO_GPIO))
 	{
-		if (GPIO_INPUT_GET(ECHO_GPIO))
+		// clear interrupt status
+		GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, gpio_status & BIT(ECHO_GPIO));
+
+		// are we waiting for the positive edge?
+		if (ultrasonicMeter_currentState == WAITFOR_ECHO_POSITIVE_EDGE)
 		{
-			// are we waitung for the positive edge?
-			if (ultrasonicMeter_currentState == WAITFOR_ECHO_POSITIVE_EDGE)
-			{
-				// then set start timestamp and set the next state 
-				ultrasonicMeter_startTime = system_get_time();
-				ultrasonicMeter_currentState = WAITFOR_ECHO_NEGATIVE_EDGE;
-			}
+			// wait for the negative edge
+			gpio_pin_intr_state_set(GPIO_ID_PIN(ECHO_GPIO), GPIO_PIN_INTR_NEGEDGE);
+
+			// set start timestamp and set the next state 
+			ultrasonicMeter_startTime = system_get_time();
+			ultrasonicMeter_currentState = WAITFOR_ECHO_NEGATIVE_EDGE;
 		}
-		else
+		// are we waiting for the negative edge?
+		else if (ultrasonicMeter_currentState == WAITFOR_ECHO_NEGATIVE_EDGE)
 		{
-			// are we waiting for the negative edge?
-			if (ultrasonicMeter_currentState == WAITFOR_ECHO_NEGATIVE_EDGE)
+			// disable interupt
+			gpio_pin_intr_state_set(GPIO_ID_PIN(ECHO_GPIO), GPIO_PIN_INTR_DISABLE);
+
+			// set stop timestamp and set the next state 
+			ultrasonicMeter_stopTime = system_get_time();
+			ultrasonicMeter_currentState = WAITFOR_SILENCE;
+
+			// calculate distance
+			float distance = ((float)ultrasonicMeter_stopTime - (float)ultrasonicMeter_startTime) / (float)US_PER_MM;
+			// distance wider than expected?
+			if (distance > (float)configuration_getDistanceEmpty())
 			{
-				// then set stop timestamp and set the next state 
-				ultrasonicMeter_stopTime = system_get_time();
-				ultrasonicMeter_currentState = WAITFOR_SILENCE;
+				distance = -1;
+			}
+			// store the measured value
+			ultrasonicMeter_measuredDistances[ultrasonicMeter_measuredDistancesIndex] = distance;
+			ultrasonicMeter_measuredDistancesIndex++;
+			os_printf("Distance = %d mm\n", (int)distance);
 
-				// calculate distance
-				float distance = ((float)ultrasonicMeter_stopTime - (float)ultrasonicMeter_startTime) / (float)US_PER_MM;
-				// distance wider than expected?
-				if (distance > (float)configuration_getDistanceEmpty())
+			// if the distance is negative we have a fault during receiving the ultrasonic echo
+			if (distance > 0.0)
+			{
+				// Increment the echo receiving quality
+				if (ultrasonicMeter_valueQuality < MAX_MEASUREMENTS)
 				{
-					distance = -1;
+					ultrasonicMeter_valueQuality++;
 				}
-				// store the measured value
-				ultrasonicMeter_measuredDistances[ultrasonicMeter_measuredDistancesIndex] = distance;
-				ultrasonicMeter_measuredDistancesIndex++;
-				os_printf("Distance = %d mm\n", (int)distance);
-
-				// if the distance is negative we have a fault during receiving the ultrasonic echo
-				if (distance > 0.0)
-				{					
-					// Increment the echo receiving quality
-					if (ultrasonicMeter_valueQuality < 10)
-					{
-						ultrasonicMeter_valueQuality++;
-					}
-				}
-				// Measuremdent fault!
-				else
+			}
+			// Measurement fault!
+			else
+			{
+				// Increment the echo receiving quality
+				if (ultrasonicMeter_valueQuality > 0)
 				{
-					// Increment the echo receiving quality
-					if (ultrasonicMeter_valueQuality > 0)
-					{
-						ultrasonicMeter_valueQuality--;
-					}
+					ultrasonicMeter_valueQuality--;
 				}
 			}
 		}
@@ -192,9 +195,6 @@ static void ICACHE_FLASH_ATTR ultrasonicMeter_gpioEvent(void *args)
 			ultrasonicMeter_finished();
 		}
 	}
-
-	// clear interrupt status
-	GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, gpio_status);
 }
 
 // triggers a new ultrasonic measurement cycle
@@ -216,24 +216,37 @@ static void ICACHE_FLASH_ATTR ultrasonicMeter_triggerNewCycle(void *arg)
 			ultrasonicMeter_valueQuality--;
 		}
 	}
+
+	if (GPIO_INPUT_GET(ECHO_GPIO))
+	{
+		os_printf("Echo pin high! Next measurement not possible!\n");
+		return;
+	}
+
 	io_ledPulse(100);
 	ultrasonicMeter_currentState = WAITFOR_ECHO_POSITIVE_EDGE;
 	gpio_output_set((1 << TRIGGER_GPIO), 0, (1 << TRIGGER_GPIO), 0);
 	os_delay_us(TRIGGER_PULSE_US);
 	gpio_output_set(0, (1 << TRIGGER_GPIO), (1 << TRIGGER_GPIO), 0);
+	// trigger interrupt on positive edge on echo pin
+	gpio_pin_intr_state_set(GPIO_ID_PIN(ECHO_GPIO), GPIO_PIN_INTR_POSEDGE);
 }
 
-// start the measurment process; that are 10 one shot ultrasonic measurement cycles
+// start the measurment process; that are MAX_MEASUREMENTS one shot ultrasonic measurement cycles
 void ICACHE_FLASH_ATTR ultrasonicMeter_startMeasurement(ultrasonicMeter_finishedCallback *pFinished)
 {
 	ultrasonicMeter_finished = pFinished;
 
-	// Disable interrupts by GPIO
-	ETS_GPIO_INTR_DISABLE();
 	// Attach interrupt handle to gpio interrupts.
 	ETS_GPIO_INTR_ATTACH(ultrasonicMeter_gpioEvent, NULL);
-	// Enable the interrupt for the rising edge of the echo pin
-	gpio_pin_intr_state_set(GPIO_ID_PIN(ECHO_GPIO), GPIO_PIN_INTR_ANYEDGE);
+	// Disable interrupts by GPIO
+	ETS_GPIO_INTR_DISABLE();
+	// not sure why I should call this but found it in several examples
+	gpio_register_set(GPIO_PIN_ADDR(ECHO_GPIO), GPIO_PIN_INT_TYPE_SET(GPIO_PIN_INTR_DISABLE)
+		| GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_DISABLE)
+		| GPIO_PIN_SOURCE_SET(GPIO_AS_PIN_SOURCE));
+	// Clear interrupt status
+	GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, BIT(ECHO_GPIO));
 	// Enable interrupts by GPIO
 	ETS_GPIO_INTR_ENABLE();
 	
