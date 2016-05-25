@@ -36,7 +36,7 @@
 #include <log.h>
 
 // Version number
-#define WIFI_WATER_LEVEL_GAUGE_VERSION "1.1"
+#define WIFI_WATER_LEVEL_GAUGE_VERSION "1.2"
 
 // The main entry point.
 void user_init(void)

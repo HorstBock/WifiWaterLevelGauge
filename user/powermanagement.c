@@ -112,7 +112,7 @@ unsigned char ICACHE_FLASH_ATTR powermanagement_shouldPostLog()
 unsigned char ICACHE_FLASH_ATTR powermanagement_checkCurrentMeasurement(float pCurrentWaterLevel)
 {
 	// is the last data too old or does the measured water level differs too much?
-	if (powermanagement_data.postUnchangedMeasurementCountDown == 0 ||
+	if (powermanagement_data.postUnchangedMeasurementCountDown <= 1 ||
 		fabs(powermanagement_data.lastMeasuredWaterLevel - pCurrentWaterLevel) >= (double)configuration_getMinDifferenceToPost())
 	{
 		// then save the current measurement

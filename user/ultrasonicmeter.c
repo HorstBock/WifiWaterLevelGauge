@@ -45,7 +45,7 @@
 #define FINISHED 4
 
 // Duration for waiting for "silence" (ultrasonic silence) in milliseconds, that's the timespan between two single shot measurements
-#define SILENCE_TIMESPAN_MS 1000
+#define SILENCE_TIMESPAN_MS 1500
 
 // Unit of measurement according to the datashett of HC-SR04 (58 µs / cm = 5,8 µs / mm)
 #define US_PER_MM 5.8
