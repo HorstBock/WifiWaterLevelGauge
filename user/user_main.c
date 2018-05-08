@@ -36,7 +36,7 @@
 #include <log.h>
 
 // Version number
-#define WIFI_WATER_LEVEL_GAUGE_VERSION "1.2"
+#define WIFI_WATER_LEVEL_GAUGE_VERSION "1.3"
 
 // The main entry point.
 void user_init(void)
@@ -90,16 +90,29 @@ void user_init(void)
 	else if (powermanagement_shouldDoMeasurement() == TRUE)
 	{
 		wifi_set_opmode_current(NULL_MODE);
-		ultrasonicMeter_startMeasurement(posting_checkIfPostNeeded);
+		ultrasonicMeter_startMeasurement(posting_checkIfPostNeeded, FALSE);
 	}
 	// should we post the measured data?
 	else if (powermanagement_shouldPostMeasurement() == TRUE || powermanagement_shouldPostLog() == TRUE)
 	{
 		os_printf("\nStarting sending data ...\n");
 		io_ledSet(1);
+
+		// connect to Wifi
+		struct station_config stationConf;
+		wifi_set_opmode(STATION_MODE);
+		os_memset(&stationConf, 0, sizeof(struct station_config));
+		os_sprintf(stationConf.ssid, configuration_getWifiSsid());
+		os_sprintf(stationConf.password, configuration_getWifiPassword());
+		wifi_station_set_config_current(&stationConf);
 		wifi_set_event_handler_cb(posting_start);
-		wifi_set_opmode_current(STATION_MODE);
 		wifi_station_connect();
+
+		// init MQTT part
+		if (configuration_shouldPostToMqtt() == TRUE)
+		{
+			posting_initializeMqtt();
+		}
 
 		// enable the posting timeout timer
 		posting_startTimeoutTimer();
@@ -108,4 +121,49 @@ void user_init(void)
 	{
 		os_printf("\n!!! Configuration error !!!\n");
 	}
+}
+
+/******************************************************************************
+* FunctionName : user_rf_cal_sector_set
+* Description  : SDK just reversed 4 sectors, used for rf init data and paramters.
+*                We add this function to force users to set rf cal sector, since
+*                we don't know which sector is free in user's application.
+*                sector map for last several sectors : ABCCC
+*                A : rf cal
+*                B : rf init data
+*                C : sdk parameters
+* Parameters   : none
+* Returns      : rf cal sector
+*******************************************************************************/
+uint32 ICACHE_FLASH_ATTR
+user_rf_cal_sector_set(void)
+{
+	enum flash_size_map size_map = system_get_flash_size_map();
+	uint32 rf_cal_sec = 0;
+
+	switch (size_map) {
+	case FLASH_SIZE_4M_MAP_256_256:
+		rf_cal_sec = 128 - 8;
+		break;
+
+	case FLASH_SIZE_8M_MAP_512_512:
+		rf_cal_sec = 256 - 5;
+		break;
+
+	case FLASH_SIZE_16M_MAP_512_512:
+	case FLASH_SIZE_16M_MAP_1024_1024:
+		rf_cal_sec = 512 - 5;
+		break;
+
+	case FLASH_SIZE_32M_MAP_512_512:
+	case FLASH_SIZE_32M_MAP_1024_1024:
+		rf_cal_sec = 1024 - 5;
+		break;
+
+	default:
+		rf_cal_sec = 0;
+		break;
+	}
+
+	return rf_cal_sec;
 }

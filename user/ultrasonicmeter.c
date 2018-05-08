@@ -75,10 +75,18 @@ static ETSTimer ultrasonicMeter_triggerNewCycleTimer;
 // call this function after all measurements are done
 static ultrasonicMeter_finishedCallback *ultrasonicMeter_finished = NULL;
 
+static unsigned char ultrasonicMeter_isSingleShotMode = FALSE;
+
 // gets the echo quality: 0 = no echo received; MAX_MEASUREMENTS = best possible; all MAX_MEASUREMENTS measurements are received
 unsigned char ICACHE_FLASH_ATTR ultrasonicMeter_getEchoQuality()
 {
 	return ultrasonicMeter_valueQuality;
+}
+
+// gets the distance that is measured in single shot mode
+float ICACHE_FLASH_ATTR ultrasonicMeter_getSingleShotDistance()
+{
+	return ultrasonicMeter_measuredDistances[0];
 }
 
 // gets the mean value of measured water level
@@ -180,8 +188,9 @@ static void ICACHE_FLASH_ATTR ultrasonicMeter_gpioEvent(void *args)
 		}
 	}
 
-	// do we have finished (array for measured values full)?
-	if (ultrasonicMeter_measuredDistancesIndex == MAX_MEASUREMENTS)
+	// do we have finished (array for measured values full) or single shot mode?
+	if (ultrasonicMeter_measuredDistancesIndex == MAX_MEASUREMENTS ||
+		(ultrasonicMeter_measuredDistancesIndex == 1 && ultrasonicMeter_isSingleShotMode == TRUE))
 	{
 		// then stop
 		// Disable interrupts by GPIO and disarm the timer
@@ -233,9 +242,11 @@ static void ICACHE_FLASH_ATTR ultrasonicMeter_triggerNewCycle(void *arg)
 }
 
 // start the measurment process; that are MAX_MEASUREMENTS one shot ultrasonic measurement cycles
-void ICACHE_FLASH_ATTR ultrasonicMeter_startMeasurement(ultrasonicMeter_finishedCallback *pFinished)
+// with pIsSingleShotMode set to TRUE one single shot measurement can also be started
+void ICACHE_FLASH_ATTR ultrasonicMeter_startMeasurement(ultrasonicMeter_finishedCallback *pFinished, unsigned char pIsSingleShotMode)
 {
 	ultrasonicMeter_finished = pFinished;
+	ultrasonicMeter_isSingleShotMode = pIsSingleShotMode;
 
 	// Attach interrupt handle to gpio interrupts.
 	ETS_GPIO_INTR_ATTACH(ultrasonicMeter_gpioEvent, NULL);
@@ -250,5 +261,6 @@ void ICACHE_FLASH_ATTR ultrasonicMeter_startMeasurement(ultrasonicMeter_finished
 	// Enable interrupts by GPIO
 	ETS_GPIO_INTR_ENABLE();
 	
+	ultrasonicMeter_measuredDistancesIndex = 0;
 	ultrasonicMeter_triggerNewCycle(NULL);
 }

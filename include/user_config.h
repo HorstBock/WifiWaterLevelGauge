@@ -34,13 +34,13 @@
 #define ACCESS_POINT_LISTENING_PORT 1253
 
 // URL for ThingSpeak
-#define THINGSPEAK_URL "https://api.thingspeak.com/update?key=%s&field1=%d&field2=%d&field3=%d"
+#define THINGSPEAK_URL "%s/update?key=%s&field1=%d&field2=%d&field3=%d"
 
 // turning the modem on or off works via a deep sleep cycle with 1 second
 #define DEEP_SLEEP_PERIOD_FOR_MODEM_ACTIVATION 1
 
 // version for the configuration data
-#define CONFIGURATION_DATA_VERSION 1
+#define CONFIGURATION_DATA_VERSION 3
 // start sector in flash for configuration data (3 x 4KB blocks)
 #define CONFIGURATION_DATA_START_SEC 0x75
 // how many 4KB blocks of flash will be used for logging?
@@ -53,5 +53,20 @@
 
 // How long should the config button pressed at least before entering the configuration mode (2 seconds)
 #define CONFIG_BUTTON_MIN_HOLD_DURATION 2
+
+// For the MQTT part
+//#define MQTT_SSL_ENABLE
+#define MQTT_BUF_SIZE   1024
+#define MQTT_RECONNECT_TIMEOUT  5 /*second*/
+#define QUEUE_BUFFER_SIZE       2048
+
+#define PROTOCOL_NAMEv31  /*MQTT version 3.1 compatible with Mosquitto v0.15*/
+//PROTOCOL_NAMEv311     /*MQTT version 3.11 compatible with https://eclipse.org/paho/clients/testing/*/
+
+#if defined(DEBUG_ON)
+#define INFO( format, ... ) os_printf( format, ## __VA_ARGS__ )
+#else
+#define INFO( format, ... )
+#endif
 
 #endif // __user_config_H__

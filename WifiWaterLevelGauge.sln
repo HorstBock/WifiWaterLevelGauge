@@ -1,19 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WifiWaterLevelGauge", "WifiWaterLevelGauge.vcxproj", "{FE2C24A2-03EE-4139-8834-474F6C3861FF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WifiWaterLevelGauge", "WifiWaterLevelGauge.vcxproj", "{B6F35D7A-A6AB-4F29-ACEA-F9D910ECF3CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		ESP8266|ARM = ESP8266|ARM
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FE2C24A2-03EE-4139-8834-474F6C3861FF}.ESP8266|ARM.ActiveCfg = ESP8266|ARM
-		{FE2C24A2-03EE-4139-8834-474F6C3861FF}.ESP8266|ARM.Build.0 = ESP8266|ARM
+		{B6F35D7A-A6AB-4F29-ACEA-F9D910ECF3CD}.Debug|ARM.ActiveCfg = Debug|ARM
+		{B6F35D7A-A6AB-4F29-ACEA-F9D910ECF3CD}.Debug|ARM.Build.0 = Debug|ARM
+		{B6F35D7A-A6AB-4F29-ACEA-F9D910ECF3CD}.Release|ARM.ActiveCfg = Release|ARM
+		{B6F35D7A-A6AB-4F29-ACEA-F9D910ECF3CD}.Release|ARM.Build.0 = Release|ARM
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8740DBCA-BA9E-4072-8DA4-29803DD3A316}
 	EndGlobalSection
 EndGlobal

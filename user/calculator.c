@@ -27,7 +27,7 @@
 #define M_PI 3.14159265358979323846
 
 #include "c_types.h"
-#include "math.h"
+#include <espmissingincludes.h>
 #include <configuration.h>
 
 // the last measured water level in millimeters

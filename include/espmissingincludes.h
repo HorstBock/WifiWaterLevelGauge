@@ -53,6 +53,9 @@ void ets_delay_us(int ms);
 // found in SDK 1.5.2 documentation
 void system_deep_sleep_instant(unsigned int time_in_us);
 
+float acosf(float);
+float sqrtf(float);
+
 //Standard PIN_FUNC_SELECT gives a warning. Replace by a non-warning one.
 #ifdef PIN_FUNC_SELECT
 #undef PIN_FUNC_SELECT

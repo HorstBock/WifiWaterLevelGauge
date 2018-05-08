@@ -29,12 +29,15 @@
 
 typedef void ultrasonicMeter_finishedCallback();
 
-// start the measurment process; that are 10 one shot ultrasonic measurement cycles
-void ICACHE_FLASH_ATTR ultrasonicMeter_startMeasurement(ultrasonicMeter_finishedCallback *pFinished);
+// start the measurment process; that are MAX_MEASUREMENTS one shot ultrasonic measurement cycles
+// with pIsSingleShotMode set to TRUE one single shot measurement can also be started
+void ICACHE_FLASH_ATTR ultrasonicMeter_startMeasurement(ultrasonicMeter_finishedCallback *pFinished, unsigned char pIsSingleShotMode);
 // gets the mean value of measured water level
 float ICACHE_FLASH_ATTR ultrasonicMeter_getWaterLevel();
 // gets the echo quality: 0 = no echo received; 10 = best possible; all 10 measurements are received
 unsigned char ICACHE_FLASH_ATTR ultrasonicMeter_getEchoQuality();
+// gets the distance that is measured in single shot mode
+float ICACHE_FLASH_ATTR ultrasonicMeter_getSingleShotDistance();
 
 #endif // __ultrasonicmeter_H__
 

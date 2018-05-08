@@ -33,6 +33,8 @@ void ICACHE_FLASH_ATTR posting_start(System_Event_t *evt);
 void ICACHE_FLASH_ATTR posting_startTimeoutTimer();
 // called after the ultrasonic measurement is finished; checks if the date should pe posted
 void ICACHE_FLASH_ATTR posting_checkIfPostNeeded();
+// initialize MQTT part
+void ICACHE_FLASH_ATTR posting_initializeMqtt();
 
 #endif // __posting_H__
 
